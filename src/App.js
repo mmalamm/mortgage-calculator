@@ -14,7 +14,7 @@ function App() {
   const handleSubmit = (e) => {
     e.preventDefault();
     const pmtInfo = utils.createPayments(principal, interest, loanLength);
-    console.log(pmtInfo.payments);
+    console.log(pmtInfo.biweekly);
     setInfo(pmtInfo);
   };
   return (
@@ -43,7 +43,7 @@ function App() {
       </form>
       {info && (
         <div>
-          <div>your monthly payment is {info.monthlyPayment}</div>
+          <div>your monthly payment is {info.payment}</div>
           <div>
             your total payment is {info.totalAmountPaid}, meaning you paid{" "}
             {info.totalInterestPaid} in interest, or {info.interestPerYear} per year on average
@@ -63,7 +63,7 @@ function App() {
                 return (
                   <tr key={i.month}>
                     <td>{i.month}</td>
-                    <td>{i.monthlyPayment}</td>
+                    <td>{i.payment}</td>
                     <td>{i.paidToInterest}</td>
                     <td>{i.paidToPrincipal}</td>
                     <td>{i.principalRemainingAfterPayment}</td>

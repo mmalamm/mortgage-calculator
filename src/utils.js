@@ -26,6 +26,11 @@ export const createPayments = (loanAmount, interestRate, loanLengthYears) => {
       loanTermInMonths,
       loanAmount
     ),
+    biweekly: makeBiWeekly(
+      monthlyPayment,
+      monthlyInterestRate,
+      loanAmount
+    ),
   };
 };
 
@@ -43,7 +48,7 @@ const makeArray = (
 
     return {
       month,
-      monthlyPayment,
+      payment: monthlyPayment,
       paidToInterest,
       paidToPrincipal,
       principalRemainingAfterPayment: loanAmount,
@@ -56,6 +61,33 @@ const makeArray = (
       return acc;
     }, {});
   });
+};
+
+const makeBiWeekly = (
+  monthlyPayment,
+  monthlyInterestRate,
+  loanAmount
+) => {
+  const payments = [];
+  for (let i = 0; loanAmount > 0; i += 0.5) {
+    const isRegularPayment = i % 1 === 0;
+    const paidToPrincipal = isRegularPayment
+      ? monthlyPayment - loanAmount * monthlyInterestRate
+      : monthlyPayment;
+    const paidToInterest = isRegularPayment
+      ? monthlyPayment - paidToPrincipal
+      : 0;
+    loanAmount -= paidToPrincipal;
+    const payment = {
+      month: i,
+      payment: monthlyPayment,
+      paidToInterest,
+      paidToPrincipal,
+      principalRemainingAfterPayment: loanAmount,
+    };
+    payments.push(payment)
+  }
+  return payments;
 };
 
 function round(num) {
