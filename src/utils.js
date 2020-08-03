@@ -4,34 +4,75 @@ export const hello = () => "hello";
 
 export const createPayments = (loanAmount, interestRate, loanLengthYears) => {
   // Payment = P x (r / n) x (1 + r / n)^n(t)] / (1 + r / n)^n(t) - 1
-  const loanTermInMonths = loanLengthYears * 12;
-  const monthlyInterestRate = interestRate / 100 / 12;
-  const numerator =
-    loanAmount *
-    monthlyInterestRate *
-    (1 + monthlyInterestRate) ** loanTermInMonths;
-  const denominator = (1 + monthlyInterestRate) ** loanTermInMonths - 1;
-  const monthlyPayment = round(numerator / denominator);
-  const totalAmountPaid = round(monthlyPayment * loanTermInMonths);
+  return {
+    regular: createRegular(loanAmount, interestRate, loanLengthYears),
+    biweekly: createBiWeekly(loanAmount, interestRate, loanLengthYears),
+  };
+};
+
+const getMonthlyPayment = (loanAmount, interestRate, loanLengthYears) => {
+  return round(
+    (loanAmount *
+      (interestRate / 100 / 12) *
+      (1 + interestRate / 100 / 12) ** (loanLengthYears * 12)) /
+      ((1 + interestRate / 100 / 12) ** (loanLengthYears * 12) - 1)
+  );
+};
+
+const createRegular = (loanAmount, interestRate, loanLengthYears) => {
+  const monthlyPayment = getMonthlyPayment(
+    loanAmount,
+    interestRate,
+    loanLengthYears
+  );
+  const totalAmountPaid = round(monthlyPayment * loanLengthYears * 12);
   const totalInterestPaid = round(totalAmountPaid - loanAmount);
   const interestPerYear = round(totalInterestPaid / loanLengthYears);
   return {
-    monthlyPayment,
+    paymentAmount: monthlyPayment,
     totalAmountPaid,
     totalInterestPaid,
     interestPerYear,
+    loanLengthInYears: loanLengthYears,
     payments: makeArray(
       monthlyPayment,
-      monthlyInterestRate,
-      loanTermInMonths,
-      loanAmount
-    ),
-    biweekly: makeBiWeekly(
-      monthlyPayment,
-      monthlyInterestRate,
+      interestRate / 100 / 12,
+      loanLengthYears * 12,
       loanAmount
     ),
   };
+};
+
+const createBiWeekly = (loanAmount, interestRate, loanLengthYears) => {
+  const monthlyPayment = getMonthlyPayment(
+    loanAmount,
+    interestRate,
+    loanLengthYears
+  );
+  const payments = makeBiWeekly(
+    monthlyPayment,
+    interestRate / 100 / 12,
+    loanAmount
+  );
+  const totalAmountPaid = payments.reduce((acc, p) => acc + p.payment, 0);
+  const totalInterestPaid = payments.reduce(
+    (acc, p) => acc + p.paidToInterest,
+    0
+  );
+  const loanLengthInYears = payments.slice(-1)[0].month / 12;
+  const interestPerYear = totalInterestPaid / loanLengthInYears;
+
+  const rounded = Object.entries({
+    paymentAmount: monthlyPayment * 2,
+    totalAmountPaid,
+    totalInterestPaid,
+    interestPerYear,
+    loanLengthInYears,
+  }).reduce((acc, [key, val]) => ({...acc, [key]: round(val)}), {});
+  return {
+    ...rounded,
+    payments
+  }
 };
 
 const makeArray = (
@@ -63,11 +104,7 @@ const makeArray = (
   });
 };
 
-const makeBiWeekly = (
-  monthlyPayment,
-  monthlyInterestRate,
-  loanAmount
-) => {
+const makeBiWeekly = (monthlyPayment, monthlyInterestRate, loanAmount) => {
   const payments = [];
   for (let i = 0; loanAmount > 0; i += 0.5) {
     const isRegularPayment = i % 1 === 0;
@@ -78,18 +115,18 @@ const makeBiWeekly = (
       ? monthlyPayment - paidToPrincipal
       : 0;
     loanAmount -= paidToPrincipal;
-    const payment = {
+    const payment = Object.entries({
       month: i,
       payment: monthlyPayment,
       paidToInterest,
       paidToPrincipal,
       principalRemainingAfterPayment: loanAmount,
-    };
-    payments.push(payment)
+    }).reduce((acc, [key, val]) => ({ ...acc, [key]: round(val) }), {});
+    payments.push(payment);
   }
   return payments;
 };
 
-function round(num) {
+export function round(num) {
   return Math.round((num + Number.EPSILON) * 100) / 100;
 }

@@ -14,7 +14,7 @@ function App() {
   const handleSubmit = (e) => {
     e.preventDefault();
     const pmtInfo = utils.createPayments(principal, interest, loanLength);
-    console.log(pmtInfo.biweekly);
+    console.log(pmtInfo);
     setInfo(pmtInfo);
   };
   return (
@@ -43,11 +43,22 @@ function App() {
       </form>
       {info && (
         <div>
-          <div>your monthly payment is {info.payment}</div>
+          <div>your monthly payment is {info.regular.paymentAmount}</div>
           <div>
-            your total payment is {info.totalAmountPaid}, meaning you paid{" "}
-            {info.totalInterestPaid} in interest, or {info.interestPerYear} per year on average
+            your total payment is {info.regular.totalAmountPaid}, meaning you
+            paid {info.regular.totalInterestPaid} in interest, or {info.regular.interestPerYear}{" "}
+            per year on average.
           </div>
+          <div>
+            if you made payments biweekly instead, you would pay{" "}
+            {info.biweekly.paymentAmount} per month, but your loan would expire{" "}
+            {info.regular.loanLengthInYears - info.biweekly.loanLengthInYears}{" "}
+            years sooner, so your total paid would be{" "}
+            {info.biweekly.totalAmountPaid} saving you{" "}
+            {utils.round(info.regular.totalInterestPaid - info.biweekly.totalInterestPaid)}{" "}
+            in interest, so you end up paying on average about {info.biweekly.interestPerYear} per year in interest for {info.biweekly.loanLengthInYears} years
+          </div>
+          <h4>regular payments</h4>
           <table>
             <thead>
               <tr>
@@ -59,7 +70,32 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              {info.payments.map((i) => {
+              {info.regular.payments.map((i) => {
+                return (
+                  <tr key={i.month}>
+                    <td>{i.month}</td>
+                    <td>{i.payment}</td>
+                    <td>{i.paidToInterest}</td>
+                    <td>{i.paidToPrincipal}</td>
+                    <td>{i.principalRemainingAfterPayment}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <h4>Biweekly payments</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>month</th>
+                <th>payment</th>
+                <th>paid to interest</th>
+                <th>paid to principal</th>
+                <th>principal remaining</th>
+              </tr>
+            </thead>
+            <tbody>
+              {info.biweekly.payments.map((i) => {
                 return (
                   <tr key={i.month}>
                     <td>{i.month}</td>
