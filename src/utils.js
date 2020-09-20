@@ -11,11 +11,12 @@ export const createPayments = (loanAmount, interestRate, loanLengthYears) => {
 };
 
 const getMonthlyPayment = (loanAmount, interestRate, loanLengthYears) => {
+  const monthlyInterestRate = interestRate / 100 / 12
   return round(
     (loanAmount *
-      (interestRate / 100 / 12) *
-      (1 + interestRate / 100 / 12) ** (loanLengthYears * 12)) /
-      ((1 + interestRate / 100 / 12) ** (loanLengthYears * 12) - 1)
+      (monthlyInterestRate) *
+      (1 + monthlyInterestRate) ** (loanLengthYears * 12)) /
+      ((1 + monthlyInterestRate) ** (loanLengthYears * 12) - 1)
   );
 };
 
