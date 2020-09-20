@@ -46,8 +46,8 @@ function App() {
           <div>your monthly payment is {info.regular.paymentAmount}</div>
           <div>
             your total payment is {info.regular.totalAmountPaid}, meaning you
-            paid {info.regular.totalInterestPaid} in interest, or {info.regular.interestPerYear}{" "}
-            per year on average.
+            paid {info.regular.totalInterestPaid} in interest, or{" "}
+            {info.regular.interestPerYear} per year on average.
           </div>
           <div>
             if you made payments biweekly instead, you would pay{" "}
@@ -55,8 +55,13 @@ function App() {
             {info.regular.loanLengthInYears - info.biweekly.loanLengthInYears}{" "}
             years sooner, so your total paid would be{" "}
             {info.biweekly.totalAmountPaid} saving you{" "}
-            {utils.round(info.regular.totalInterestPaid - info.biweekly.totalInterestPaid)}{" "}
-            in interest, so you end up paying on average about {info.biweekly.interestPerYear} per year in interest for {info.biweekly.loanLengthInYears} years
+            {utils.round(
+              info.regular.totalInterestPaid - info.biweekly.totalInterestPaid
+            )}{" "}
+            in interest, so you end up paying on average about{" "}
+            {info.biweekly.interestPerYear} per year in interest for{" "}
+            {info.biweekly.loanLengthInYears} years, totaling{" "}
+            {info.biweekly.totalInterestPaid} paid in interest.
           </div>
           <h4>regular payments</h4>
           <table>
