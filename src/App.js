@@ -3,28 +3,43 @@ import "./App.css";
 import * as utils from "./utils.js";
 
 function App() {
-  const [principal, setPrincipal] = useState("300000");
+  const [housePrice, setHousePrice] = useState("300000");
+  const [downPaymentPercent, setDownPaymentPercent] = useState("20");
+  // const [principal, setPrincipal] = useState(
+  //   housePrice - (housePrice * downPaymentPercent) / 100
+  // );
   const [interest, setInterest] = useState("3.5");
   const [loanLength, setLoanLength] = useState("30");
   const [info, setInfo] = useState(null);
-  const handlePrincipalChange = (e) => setPrincipal(e.target.value);
+  const handleHousePriceChange = (e) => setHousePrice(e.target.value);
+  const handleDownPaymentPercentChange = (e) =>
+    setDownPaymentPercent(e.target.value);
+  // const handlePrincipalChange = (e) => setPrincipal(e.target.value);
   const handleInterestChange = (e) => setInterest(e.target.value);
   const handleLoanLengthChange = (e) => setLoanLength(e.target.value);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const downPaymentTotal = (housePrice * downPaymentPercent) / 100;
+    const principal = housePrice - downPaymentTotal;
     const pmtInfo = utils.createPayments(principal, interest, loanLength);
     console.log(pmtInfo);
-    setInfo(pmtInfo);
+    setInfo({ ...pmtInfo, downPaymentTotal, principal });
   };
   return (
     <>
       <form onSubmit={handleSubmit} className="App">
-        <p>principal</p>
+        <p>House Price</p>
         <input
           type="text"
-          value={principal}
-          onChange={handlePrincipalChange}
+          value={housePrice}
+          onChange={handleHousePriceChange}
+        ></input>
+        <p>Downpayment Percentage</p>
+        <input
+          type="text"
+          value={downPaymentPercent}
+          onChange={handleDownPaymentPercentChange}
         ></input>
         <p>interest rate</p>
         <input
@@ -43,11 +58,20 @@ function App() {
       </form>
       {info && (
         <div>
+          <div>
+            for a house price of {housePrice} assuming you put{" "}
+            {downPaymentPercent}% down, your downpayment would be{" "}
+            {info.downPaymentTotal} and your total loan amount would be{" "}
+            {info.principal}
+          </div>
           <div>your monthly payment is {info.regular.paymentAmount}</div>
           <div>
-            your total payment is {info.regular.totalAmountPaid}, meaning you
-            paid {info.regular.totalInterestPaid} in interest, or{" "}
-            {info.regular.interestPerYear} per year on average.
+            your total payment is {info.regular.totalAmountPaid} on a principal
+            loan amount of {info.principal}, meaning you paid{" "}
+            {info.regular.totalInterestPaid} in interest, or{" "}
+            {info.regular.interestPerYear} per year on average. The house ended
+            up costing you{" "}
+            {+info.regular.totalAmountPaid + +info.downPaymentTotal}
           </div>
           <div>
             if you made payments biweekly instead, you would pay{" "}
@@ -61,7 +85,9 @@ function App() {
             in interest, so you end up paying on average about{" "}
             {info.biweekly.interestPerYear} per year in interest for{" "}
             {info.biweekly.loanLengthInYears} years, totaling{" "}
-            {info.biweekly.totalInterestPaid} paid in interest.
+            {info.biweekly.totalInterestPaid} paid in interest. The house ended
+            up costing you{" "}
+            {+info.biweekly.totalAmountPaid + +info.downPaymentTotal}
           </div>
           <h4>regular payments</h4>
           <table>
